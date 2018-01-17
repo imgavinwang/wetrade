@@ -1,0 +1,1 @@
+g++ -o wetrade gateway_engine.cpp ctpmd.cpp ctptd.cpp -Ictpapi -Lctpapi -l thosttraderapi -l thostmduserapi -pthread -std=c++11
