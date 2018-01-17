@@ -16,9 +16,8 @@ using namespace std;
 class TdApi : public CThostFtdcTraderSpi
 {
 public:
-	TdApi(EventEngine* eventEngine)
+	TdApi()
 	{
-		eventEngine_ = eventEngine;
 		api = CThostFtdcTraderApi::CreateFtdcTraderApi("./tddata_"); //创建交易实例  
 	};
 
@@ -75,7 +74,7 @@ public:
 
 private:
 	CThostFtdcTraderApi* api;
-	EventEngine* eventEngine_;
+	//StrategyEngine *strategyEngine_;
 
 	bool beConnected;
 	bool beLogined;

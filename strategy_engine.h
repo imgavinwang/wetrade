@@ -2,6 +2,11 @@
 
 #include <iostream>
 
+#include "event_engine.hpp"
+#include "ThostFtdcUserApiDataType.h"
+#include "ThostFtdcUserApiStruct.h"
+#include "ctptd.h"
+
 class StrategyEngine
 {
 public:
@@ -14,6 +19,26 @@ public:
 
 	};
 	
+	void RegisterTdApi(TdApi* tdapi) 
+	{
+		tdapi_ = tdapi;
+	};
+
+	void OnTick(CThostFtdcDepthMarketDataField tick)
+	{
+		cout << "StrategyEngine::OnTick:["  
+             << tick.TradingDay << " "  
+             << tick.UpdateTime << " "  
+             << tick.UpdateMillisec << "] "  
+             << tick.InstrumentID << " "  
+             << tick.LastPrice << endl;
+
+        if(tick.LastPrice > 0) {
+        	tdapi_->ReqOrderInsert((char*)tick.InstrumentID, tick.LastPrice, 1, THOST_FTDC_D_Sell);
+        }
+	};
+	
 private:
 	EventEngine* eventEngine_;
+	TdApi* tdapi_;
 };

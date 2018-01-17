@@ -11,20 +11,7 @@ using namespace std;
 
 class EventEngine
 {
-/*
-public:
-	void Start();
-	void Stop();
-	void Register();
-	void UnRegister();
-	void Put();
 
-private:
-	void _Run();
-	void _Process();
-	void _OnTimer();
-	void _RunTimer();
-*/
 public:
 	EventEngine()
 	{
@@ -35,6 +22,12 @@ public:
 
 	};
 
+	void Start();
+	void Stop();
+	void Register();
+	void UnRegister();
+	void Put();
+
 	void StartTimer(int interval, std::function<void()> task) 
 	{
 		cout << "EventEngine::StartTimer" << endl;
@@ -42,9 +35,9 @@ public:
 		std::thread(f, interval, task).detach();
 	};
 
-	void Stop()
+	void StopTimer()
 	{
-		cout << "EventEngine::Stop" << endl;
+		cout << "EventEngine::StopTimer" << endl;
 		t->Expire();
 	}
 

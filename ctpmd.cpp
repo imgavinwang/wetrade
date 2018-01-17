@@ -56,10 +56,13 @@ void MdApi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDat
 
     CThostFtdcDepthMarketDataField marketData;  
     memcpy(&marketData, pDepthMarketData, sizeof(CThostFtdcDepthMarketDataField)); 
+    /*
     cout << "MdApi::OnRtnDepthMarketData:["  
              << marketData.TradingDay << " "  
              << marketData.UpdateTime << " "  
              << marketData.UpdateMillisec << "] "  
              << marketData.InstrumentID << " "  
              << marketData.LastPrice << endl;
+	*/
+    strategyEngine_->OnTick(marketData);
 }

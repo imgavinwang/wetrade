@@ -10,15 +10,16 @@
 #include "ThostFtdcUserApiStruct.h"
 
 #include "event_engine.hpp"
+#include "strategy_engine.h"
 
 using namespace std;
 
 class MdApi : public CThostFtdcMdSpi
 {
 public:
-	MdApi(EventEngine* eventEngine)
+	MdApi(StrategyEngine *strategyEngine)
 	{
-		eventEngine_ = eventEngine;
+		strategyEngine_ = strategyEngine;
 		api = CThostFtdcMdApi::CreateFtdcMdApi("./mddata_", true, true); //创建行情实例  
 	};
 
@@ -57,7 +58,7 @@ public:
 
 private:
 	CThostFtdcMdApi* api;
-	EventEngine* eventEngine_;
+	StrategyEngine *strategyEngine_;
 
 	bool beConnected;
 	bool beLogined;
