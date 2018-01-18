@@ -13,6 +13,7 @@ public:
 	StrategyEngine(EventEngine* eventEngine)
 	{
 		eventEngine_ = eventEngine;
+		count = 0;
 	};
 	~StrategyEngine()
 	{
@@ -33,12 +34,15 @@ public:
              << tick.InstrumentID << " "  
              << tick.LastPrice << endl;
 
-        if(tick.LastPrice > 0) {
+        count++;
+        if(count > 10 && tick.LastPrice > 0) {
         	tdapi_->ReqOrderInsert((char*)tick.InstrumentID, tick.LastPrice, 1, THOST_FTDC_D_Sell);
+        	count = 0;
         }
 	};
 	
 private:
 	EventEngine* eventEngine_;
 	TdApi* tdapi_;
+	int count;
 };

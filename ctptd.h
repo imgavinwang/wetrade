@@ -56,20 +56,27 @@ public:
 	void ReqQryInvestorPosition();
 	void ReqOrderInsert(TThostFtdcInstrumentIDType instrumentID, TThostFtdcPriceType price, 
 		TThostFtdcVolumeType volume, TThostFtdcDirectionType direction);
+	void ReqOrderAction(CThostFtdcOrderField *pOrder);
 
-	virtual void OnFrontConnected();
-	virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
+	void OnFrontConnected();
+	void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-	virtual void OnRspSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, 
+	void OnRspSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField *pSettlementInfoConfirm, 
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-	virtual void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, 
+	void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, 
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-	virtual void OnRspQryTradingAccount(CThostFtdcTradingAccountField *pTradingAccount, 
+	void OnRspQryTradingAccount(CThostFtdcTradingAccountField *pTradingAccount, 
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-	virtual void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, 
+	void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, 
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-	virtual void OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, 
+	void OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, 
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	void OnRtnOrder(CThostFtdcOrderField *pOrder);
+	void OnRtnTrade(CThostFtdcTradeField *pTrade);
+	void OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+
+	bool IsMyOrder(CThostFtdcOrderField *pOrder);
+	bool IsTradingOrder(CThostFtdcOrderField *pOrder);
 	bool IsErrorRspInfo(CThostFtdcRspInfoField *pRspInfo);
 
 private:
@@ -79,6 +86,7 @@ private:
 	bool beConnected;
 	bool beLogined;
 	int iRequestID;
+	bool order_action_send;
 
 	string _frontaddr;
 	string _brokerid;

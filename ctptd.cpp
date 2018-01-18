@@ -108,8 +108,53 @@ void TdApi::ReqOrderInsert(TThostFtdcInstrumentIDType instrumentID, TThostFtdcPr
 	///用户强评标志: 否
 	req.UserForceClose = 0;
 
+	int iOrderRef = atoi(order_ref);
+	iOrderRef++;
+	sprintf(order_ref, "%d", iOrderRef);
+
 	int iResult = api->ReqOrderInsert(&req, ++iRequestID);
-	cerr << "--Do TdApi::ReqOrderInsert: instrumentID[" << instrumentID << "] price[" << price << "] volume[" << volume << "] direction[" << direction << "] " << ((iResult == 0) ? "ok" : "failed") << endl;
+	cout << "--Do TdApi::ReqOrderInsert: instrumentID[" << instrumentID << "] price[" << price << "] volume[" << volume << "] direction[" << direction << "] order_ref[" << order_ref << "] " << ((iResult == 0) ? "ok" : "failed") << endl;
+}
+
+void TdApi::ReqOrderAction(CThostFtdcOrderField *pOrder)
+{
+	order_action_send = false;		//是否发送了报单
+	if (order_action_send)
+		return;
+
+	CThostFtdcInputOrderActionField req;
+	memset(&req, 0, sizeof(req));
+	///经纪公司代码
+	strcpy(req.BrokerID, pOrder->BrokerID);
+	///投资者代码
+	strcpy(req.InvestorID, pOrder->InvestorID);
+	///报单操作引用
+//	TThostFtdcOrderActionRefType	OrderActionRef;
+	///报单引用
+	strcpy(req.OrderRef, pOrder->OrderRef);
+	///请求编号
+//	TThostFtdcRequestIDType	RequestID;
+	///前置编号
+	req.FrontID = front_id;
+	///会话编号
+	req.SessionID = session_id;
+	///交易所代码
+//	TThostFtdcExchangeIDType	ExchangeID;
+	///报单编号
+//	TThostFtdcOrderSysIDType	OrderSysID;
+	///操作标志
+	req.ActionFlag = THOST_FTDC_AF_Delete;
+	///价格
+//	TThostFtdcPriceType	LimitPrice;
+	///数量变化
+//	TThostFtdcVolumeType	VolumeChange;
+	///用户代码
+//	TThostFtdcUserIDType	UserID;
+	///合约代码
+	strcpy(req.InstrumentID, pOrder->InstrumentID);
+	int iResult = api->ReqOrderAction(&req, ++iRequestID);
+	cout << "--Do TdApi::ReqOrderAction: " << ((iResult == 0) ? "ok" : "failed") << endl;
+	order_action_send = true;
 }
 
 /*---------------------------------------------*/
@@ -131,12 +176,10 @@ void TdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
 		// 保存会话参数
 		front_id = pRspUserLogin->FrontID;
 		session_id = pRspUserLogin->SessionID;
-		int iNextOrderRef = atoi(pRspUserLogin->MaxOrderRef);
-		iNextOrderRef++;
-		sprintf(order_ref, "%d", iNextOrderRef);
+		sprintf(order_ref, "%s", pRspUserLogin->MaxOrderRef);
 		///获取当前交易日
 		sprintf(trading_day, "%s", pRspUserLogin->TradingDay);
-		cout << "trading_day[" << trading_day << "] front_id[" << front_id << "] session_id[" << session_id << "]" << endl;
+		cout << "trading_day[" << trading_day << "] front_id[" << front_id << "] session_id[" << session_id << "] order_ref[" << order_ref << "] " << endl;
 		
 		///投资者结算结果确认
 		ReqSettlementInfoConfirm();
@@ -198,6 +241,58 @@ void TdApi::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder,
 		CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
 	cout << "TdApi::OnRspOrderInsert" << endl;
+}
+
+void TdApi::OnRtnOrder(CThostFtdcOrderField *pOrder)  
+{  
+    char str[10];  
+    sprintf(str, "%d", pOrder->OrderSubmitStatus);  
+    int orderState = atoi(str) - 48;    //报单状态0=已经提交，3=已经接受  
+  
+    cout << "TdApi::OnRtnOrder: ";
+  
+    if (IsMyOrder(pOrder))  
+    {  
+        if (IsTradingOrder(pOrder))  
+        {  
+            cout << "waiting order deal... OrderRef[" << pOrder->OrderRef << "] " << endl;  
+            //reqOrderAction(pOrder); // 这里可以撤单  
+            //reqUserLogout(); // 登出测试  
+        }  
+        else if (pOrder->OrderStatus == THOST_FTDC_OST_Canceled)  
+            cout << "order canceled OrderRef[" << pOrder->OrderRef << "] " << endl;  
+    }  
+}  
+  
+void TdApi::OnRtnTrade(CThostFtdcTradeField *pTrade)  
+{  
+	cout << "TdApi::OnRtnTrade deal: ";
+    cout << "TradeTime[" << pTrade->TradeTime << "] ";  
+    cout << "InstrumentID[" << pTrade->InstrumentID << "] ";  
+    cout << "Price[" << pTrade->Price << "] ";  
+    cout << "Volume[" << pTrade->Volume << "] ";  
+    cout << "Direction[" << pTrade->Direction << "] ";
+    cout << "OrderRef[" << pTrade->OrderRef << "] " << endl;  
+}  
+
+void TdApi::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	cout << "TdApi::OnRspOrderAction" << endl;
+	IsErrorRspInfo(pRspInfo);
+}
+
+bool TdApi::IsMyOrder(CThostFtdcOrderField *pOrder)
+{
+	return ((pOrder->FrontID == front_id) &&
+			(pOrder->SessionID == session_id) &&
+			(strcmp(pOrder->OrderRef, order_ref) == 0));
+}
+
+bool TdApi::IsTradingOrder(CThostFtdcOrderField *pOrder)
+{
+	return ((pOrder->OrderStatus != THOST_FTDC_OST_PartTradedNotQueueing) &&
+			(pOrder->OrderStatus != THOST_FTDC_OST_Canceled) &&
+			(pOrder->OrderStatus != THOST_FTDC_OST_AllTraded));
 }
 
 bool TdApi::IsErrorRspInfo(CThostFtdcRspInfoField *pRspInfo)
