@@ -64,5 +64,7 @@ void MdApi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDat
              << marketData.InstrumentID << " "  
              << marketData.LastPrice << endl;
 	*/
+
+   	//行情推送给策略引擎
     strategyEngine_->OnTick(marketData);
 }

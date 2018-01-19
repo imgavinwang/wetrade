@@ -25,7 +25,7 @@ public:
 	void SetConnect(string tdaddr, string mdaddr, string brokerid, string investorid, string password)
 	{
 		tdapi->SetConnect(tdaddr, brokerid, investorid, password);
-		mdapi->SetConnect(mdaddr, brokerid, investorid, password);
+		mdapi->SetConnect(mdaddr, "", "", "");
 	};
 	void Init()
 	{
